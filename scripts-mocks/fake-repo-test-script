@@ -1,0 +1,40 @@
+# Set up "remote"
+mkdir fake-remote-repo
+cd fake-remote-repo
+git init --bare
+cd ..
+
+# Clone locally
+git clone fake-remote-repo my-project
+cd my-project
+
+# Initial commit to main
+echo "# My Project" > README.md
+git add README.md
+git commit -m "Initial commit"
+git push origin main
+
+# Create dev branch
+git branch dev
+git checkout dev
+git push origin dev
+
+# Work on a feature branch
+git checkout dev
+git branch feature/section-1
+git checkout feature/section-1
+echo "Section 1 complete" >> README.md
+git add README.md
+git commit -m "Complete Section 1"
+git push origin feature/section-1
+
+# Merge into dev
+git checkout dev
+git merge feature/section-1
+git push origin dev
+
+# Simulate finishing all sections, then merge into main
+git checkout main
+git merge dev
+git push origin main
+
