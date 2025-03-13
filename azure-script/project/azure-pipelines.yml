@@ -1,0 +1,94 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - main # Trigger the pipeline on changes to the main branch
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  DOCKER_REGISTRY: "omer-connect"
+  REPO_NAME: "Asus-azure-devops-fe"
+  DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/app/Dockerfile"
+  IMAGE_TAG: "$(Build.BuildId)"
+
+jobs:
+  - job: Linting
+    displayName: "Run Linting"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.12"
+          addToPath: true
+        displayName: "Setup Python 3.12"
+
+      - script: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install flake8
+          python -m flake8 ./app/src --exclude=tests
+        displayName: "Run flake8 - linting"
+
+  - job: SecurityCheck
+    displayName: "Run Security Check"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.12"
+          addToPath: true
+        displayName: "Setup Python 3.12"
+
+      - script: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install bandit
+          python -m bandit -r ./app/src --exclude=tests
+        displayName: "Run Bandit - security check"
+
+  - job: UnitTests
+    displayName: "Run Unit Tests"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.12"
+          addToPath: true
+        displayName: "Setup Python 3.12"
+
+      - script: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r ./app/requirements.txt
+          python -m pytest ./app/src/tests
+        displayName: "Run Unit Tests"
+
+  - job: BuildAndPushDockerImage
+    displayName: "Build & Push Docker Image"
+    dependsOn:
+      - Linting
+      - SecurityCheck
+      - UnitTests
+    steps:
+      - task: Docker@2
+        inputs:
+          command: "build"
+          containerRegistry: "$(DOCKER_REGISTRY)"
+          repository: "$(REPO_NAME)"
+          dockerfile: "$(DOCKER_FILE_PATH)"
+          tags: |
+            $(IMAGE_TAG)
+            latest
+        displayName: "Build Docker Image"
+      - task: Docker@2
+        inputs:
+          command: "push"
+          containerRegistry: "$(DOCKER_REGISTRY)"
+          repository: "$(REPO_NAME)"
+          tags: |
+            $(IMAGE_TAG)
+            latest
+        displayName: "Push Docker Image"
