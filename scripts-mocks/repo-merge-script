@@ -1,0 +1,110 @@
+#!/bin/bash
+cd /path/to/azure-labs
+
+# Ensure dev and initial feature branch are pushed
+git checkout dev
+git push origin dev
+git checkout main
+
+# Feature: azure-pipeline-fe
+git checkout -b feature/azure-pipeline-fe
+mkdir azure-pipeline-fe
+cp -r ../temp-repo/src/* azure-pipeline-fe/
+git add azure-pipeline-fe
+git commit -m "Add azure-pipeline-fe folder with pipeline content"
+git push origin feature/azure-pipeline-fe
+git checkout dev
+git merge feature/azure-pipeline-fe
+# OR
+# git merge feature/azure-pipeline-fe -m "Merged azure-pipeline-fe into dev"
+git push origin dev
+
+# Feature: azure-script
+git checkout main
+git branch feature/azure-script
+git checkout feature/azure-script
+# OR
+# git checkout -b feature/azure-script
+mkdir azure-script
+cp -r ../temp-repo/python/* azure-script/
+git add azure-script
+git commit -m "Add azure-script folder with script content"
+git push origin feature/azure-script
+git checkout dev
+git merge feature/azure-script
+# OR
+# git merge feature/azure-script -m "Merged azure-script into dev"
+git push origin dev
+
+# Feature: matrixes
+git checkout main
+git branch feature/matrixes
+git checkout feature/matrixes
+# OR
+# git checkout -b feature/matrixes
+mkdir matrixes
+cp -r ../temp-repo/tests/* matrixes/
+git add matrixes
+git commit -m "Add matrixes folder with test content"
+git push origin feature/matrixes
+git checkout dev
+git merge feature/matrixes
+# OR
+# git merge feature/matrixes -m "Merged azure-script into dev"
+git push origin dev
+
+# Feature: pipeline_with_my_acr
+git checkout main
+git branch feature/pipeline_with_my_acr
+git checkout feature/pipeline_with_my_acr
+# OR
+# git checkout -b feature/pipeline_with_my_acr
+mkdir pipeline_with_my_acr
+cp -r ../temp-repo/src/* pipeline_with_my_acr/
+git add pipeline_with_my_acr
+git commit -m "Add pipeline_with_my_acr folder with pipeline content"
+git push origin feature/pipeline_with_my_acr
+git checkout dev
+git merge feature/pipeline_with_my_acr
+# OR
+# git merge feature/pipeline_with_my_acr -m "Merged azure-script into dev"
+git push origin dev
+
+# Feature: python_with_azure
+git checkout main
+git branch feature/python_with_azure
+git checkout feature/python_with_azure
+# OR
+# git checkout -b feature/python_with_azure
+mkdir python_with_azure
+cp -r ../temp-repo/python/* python_with_azure/
+git add python_with_azure
+git commit -m "Add python_with_azure folder with Python content"
+git push origin feature/python_with_azure
+git checkout dev
+git merge feature/python_with_azure
+# OR
+# git merge feature/python_with_azure -m "Merged azure-script into dev"
+git push origin dev
+
+# Feature: terraform_with_azure
+git checkout main
+git branch feature/terraform_with_azure
+git checkout feature/terraform_with_azure
+# OR
+# git checkout -b feature/terraform_with_azure
+mkdir terraform_with_azure
+cp -r ../temp-repo/tests/* terraform_with_azure/
+git add terraform_with_azure
+git commit -m "Add terraform_with_azure folder with test content"
+git push origin feature/terraform_with_azure
+git checkout dev
+git merge feature/terraform_with_azure
+# OR
+# git merge feature/terraform_with_azure -m "Merged azure-script into dev"
+git push origin dev
+
+# Merge into main
+git checkout main
+git merge dev
+git push origin main
