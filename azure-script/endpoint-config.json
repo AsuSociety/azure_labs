@@ -1,0 +1,17 @@
+{
+  "name": "omer-connect",
+  "type": "dockerregistry",
+  "url": "https://${ACR_NAME}.azurecr.io",
+  "authorization": {
+    "parameters": {
+      "registry": "https://${ACR_NAME}.azurecr.io",
+      "username": "$ACR_USERNAME",
+      "password": "$ACR_PASSWORD",
+      "email": "user@example.com"
+    },
+    "scheme": "UsernamePassword"
+  },
+  "isShared": false,
+  "isReady": true,
+  "owner": "Library"
+}
