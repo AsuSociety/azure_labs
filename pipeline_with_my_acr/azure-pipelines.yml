@@ -1,0 +1,29 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+      - main # Trigger the pipeline on changes to the main branch
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  CONNECTION_SERVICE: "rafael-devops-team"
+  REPO_NAME: "asus-azure-devops-fe"
+  DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/app/Dockerfile"
+  IMAGE_TAG: "latest"
+
+jobs:
+  - job: CheckMainfe
+    displayName: "Check mainfe.py"
+    container:
+      image: "$(REPO_NAME):$(IMAGE_TAG)"
+      endpoint: "rafael-devops-team"
+    steps:
+      - script: |
+          cat /app/mainfe.py
+        displayName: "check mainfe.py"
