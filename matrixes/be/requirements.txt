@@ -1,0 +1,9 @@
+flask
+mysql-connector-python
+requests
+flask-cors
+pytest
+pytest-mock
+mysql-connector-python
+requests-mock
+

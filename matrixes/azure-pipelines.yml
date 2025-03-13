@@ -1,0 +1,121 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  DOCKER_REGISTRY: "rafael-devops-team"
+  IMAGE_TAG: "$(Build.BuildId)"
+
+jobs:
+  - job: Linting
+    displayName: "Run Linting"
+    strategy:
+      matrix:
+        frontend:
+          REPO_NAME: "asus-azure-devops-fe"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/fe/Dockerfile"
+          APP_SRC: "./fe/src"
+        backend:
+          REPO_NAME: "asus-azure-devops-be"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/be/Dockerfile"
+          APP_SRC: "./be/src"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.12"
+          addToPath: true
+        displayName: "Setup Python 3.12"
+
+      - script: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install flake8
+          cd $(APP_SRC)
+          python -m flake8 --exclude=tests
+        displayName: "Run flake8 - linting"
+
+  - job: SecurityCheck
+    displayName: "Run Security Check"
+    strategy:
+      matrix:
+        frontend:
+          REPO_NAME: "asus-azure-devops-fe"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/fe/Dockerfile"
+          APP_SRC: "./fe/src"
+        backend:
+          REPO_NAME: "asus-azure-devops-be"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/be/Dockerfile"
+          APP_SRC: "./be/src"
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: "3.12"
+          addToPath: true
+        displayName: "Setup Python 3.12"
+
+      - script: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install bandit
+          python -m bandit -r $(APP_SRC) --exclude=tests
+        displayName: "Run Bandit - security check"
+
+  - job: UnitTests
+    displayName: "Run Unit Tests"
+    strategy:
+      matrix:
+        frontend:
+          REPO_NAME: "asus-azure-devops-fe"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/fe/Dockerfile"
+          APP_DIR: "./fe"
+        backend:
+          REPO_NAME: "asus-azure-devops-be"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/be/Dockerfile"
+          APP_DIR: "./be"
+    container: "python:3.12"
+    steps:
+      - script: |
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install -r $(APP_DIR)/requirements.txt
+          python -m pytest $(APP_DIR)/src/tests
+        displayName: "Run Unit Tests"
+
+  - job: BuildAndPushDockerImage
+    displayName: "Build & Push Docker Image"
+    dependsOn:
+      - Linting
+      - SecurityCheck
+      - UnitTests
+    strategy:
+      matrix:
+        frontend:
+          REPO_NAME: "asus-azure-devops-fe"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/fe/Dockerfile"
+        backend:
+          REPO_NAME: "asus-azure-devops-be"
+          DOCKER_FILE_PATH: "$(Build.SourcesDirectory)/be/Dockerfile"
+    steps:
+      - task: Docker@2
+        inputs:
+          command: "build"
+          containerRegistry: "$(DOCKER_REGISTRY)"
+          repository: "$(REPO_NAME)"
+          dockerfile: "$(DOCKER_FILE_PATH)"
+          tags: |
+            $(IMAGE_TAG)
+            latest
+        displayName: "Build Docker Image"
+      - task: Docker@2
+        inputs:
+          command: "push"
+          containerRegistry: "$(DOCKER_REGISTRY)"
+          repository: "$(REPO_NAME)"
+          tags: |
+            $(IMAGE_TAG)
+            latest
+        displayName: "Push Docker Image"
